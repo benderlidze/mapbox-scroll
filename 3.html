@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <title>Scrollytelling Template</title>
+    <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
+    <link href="https://api.mapbox.com/mapbox-gl-js/v2.2.0/mapbox-gl.css" rel="stylesheet">
+    <script src="https://api.mapbox.com/mapbox-gl-js/v2.2.0/mapbox-gl.js"></script>
+    <script src="https://unpkg.com/intersection-observer@0.5.1/intersection-observer.js"></script>
+    <script src="https://unpkg.com/scrollama"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: sans-serif;
+        }
+
+        a,
+        a:hover,
+        a:visited {
+            color: #06bc00;
+        }
+
+        #map {
+            top: 0;
+            height: 100vh;
+            width: 100vw;
+            position: fixed;
+            z-index: -5;
+        }
+
+        #header {
+            margin: 3vh auto;
+            width: 90vw;
+            padding: 2vh;
+            text-align: center;
+        }
+
+        #footer {
+            width: 100%;
+            min-height: 5vh;
+            padding-top: 2vh;
+            padding-bottom: 2vh;
+            text-align: center;
+            line-height: 25px;
+            font-size: 13px;
+        }
+
+        #features {
+            padding-top: 10vh;
+            padding-bottom: 10vh;
+            z-index: 100;
+        }
+
+        .centered {
+            width: 50vw;
+            margin: 0 auto;
+        }
+
+        .lefty {
+            width: 33vw;
+            margin-left: 5vw;
+        }
+
+        .righty {
+            width: 33vw;
+            margin-left: 62vw;
+        }
+
+        .light {
+            color: #444;
+            background-color: #fafafa;
+        }
+
+        .dark {
+            color: #fafafa;
+            background-color: #444;
+        }
+
+        .step {
+            padding-bottom: 50vh;
+            /* margin-bottom: 10vh; */
+            opacity: 0.25;
+        }
+
+        .step.active {
+            opacity: 0.9;
+        }
+
+        .step div {
+            padding: 25px 50px;
+            line-height: 25px;
+            font-size: 13px;
+        }
+
+        .step img {
+            width: 100%;
+        }
+
+        @media (max-width: 750px) {
+            #features {
+                width: 90vw;
+                margin: 0 auto;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="map"></div>
+    <div id="story"></div>
+    <script src="config.js"></script>
+    <script>
+
+
+        mapboxgl.accessToken = "pk.eyJ1IjoibWJ4c29sdXRpb25zIiwiYSI6ImNrMm01aG9hdTBlZGwzbXQ1ZXVrNHNmejAifQ.QHQA0N6XPWddCXtvoODHZg";
+        var map = new mapboxgl.Map({
+            container: 'map',
+            style: 'mapbox://styles/mapbox/light-v10',
+            center: { lng: -97.06100000000004, lat: 38.39659 },
+            zoom: 3.3,
+            scrollZoom: false,
+        });
+
+
+        map.on("load", function () {
+            uploadLayers()
+        });
+
+        function uploadLayers() {
+            const layersList = [
+                { url: '1600-1624.geojson' },
+                { url: '1625-1649.geojson' },
+                { url: '1650-1664.geojson' },
+                { url: '1665-1715.geojson' },
+                { url: '1716-1775.geojson' },
+                { url: '1769-1770.geojson' },
+                { url: '1771-1789.geojson' },
+                { url: '1790-1791.geojson' },
+                { url: '1792-1804.geojson' },
+                { url: '1805-1819.geojson' },
+                { url: '1820-1821.geojson' },
+                { url: '1822-1829.geojson' },
+                { url: '1822-1834.geojson' },
+                { url: '1830-1834.geojson' },
+                { url: '1834-1846.geojson' },
+                { url: '1846-1849.geojson' },
+                { url: '1850-1853.geojson' },
+                { url: '1854-1864.geojson' },
+                { url: '1865-1879.geojson' },
+                { url: '1865-1896.geojson' },
+                { url: '1880-1881.geojson' },
+                { url: '1882-1894.geojson' },
+                { url: '1897-2018.geojson' },
+                { url: '2018-2021.geojson' },
+                { url: 'base-layer.geojson' },
+            ]
+
+            let requests = layersList.map(i => fetch('data/' + i.url));
+
+            Promise.all(requests)
+                .then(responses => responses.forEach(
+                    response => {
+
+                        console.log(`${response}: ${response.status}`)
+
+                    }
+                ));
+
+
+            Promise
+                .all(requests)
+                .then(results => Promise.all(results.map(r => r.json())))
+                .then(results => {
+                    console.log(results)
+
+                    results.forEach(data => {
+                        const sourceName = data.name;
+                        map.addSource(sourceName, {
+                            'type': 'geojson',
+                            'data': data
+                        });
+
+                        // Add a new layer to visualize the polygon.
+                        map.addLayer({
+                            'id': sourceName + '_fill',
+                            'type': 'fill',
+                            'source': sourceName, // reference the data source
+                            'layout': {
+                                'visibility': 'none'
+                            },
+                            'paint': {
+                                'fill-color': '#0080ff', // blue color fill
+                                'fill-opacity': 0.5
+                            }
+
+                        });
+                        // Add a black outline around the polygon.
+                        map.addLayer({
+                            'id': sourceName + '_outline',
+                            'type': 'line',
+                            'source': sourceName,
+                            'layout': {
+                                'visibility': 'none'
+                            },
+                            'paint': {
+                                'line-color': '#000',
+                                'line-width': 1
+                            }
+                        });
+                    })
+
+                    createScrolly(results)
+                })
+        }
+
+        function createScrolly(data) {
+
+            var story = document.getElementById('story');
+            var features = document.createElement('div');
+            features.classList.add('lefty');
+            features.setAttribute('id', 'features');
+
+            //fill scroll data in boxes 
+            data.forEach((record, idx) => {
+                console.log('record', record);
+                record.id = idx;
+                record.description = "Some description";
+
+                var container = document.createElement('div');
+                var chapter = document.createElement('div');
+
+                if (record.name) {
+                    var title = document.createElement('h1');
+                    title.innerText = record.name;
+                    chapter.appendChild(title);
+                }
+
+                if (record.description) {
+                    var story = document.createElement('p');
+                    story.innerHTML = record.description;
+                    chapter.appendChild(story);
+                }
+
+                container.setAttribute('id', record.idx);
+                container.classList.add('step');
+                if (idx === 0) {
+                    container.classList.add('active');
+                }
+
+                chapter.classList.add(config.theme);
+                container.appendChild(chapter);
+                features.appendChild(container);
+            });
+
+            story.appendChild(features);
+
+            // instantiate the scrollama
+            var scroller = scrollama();
+
+            // setup resize event
+            window.addEventListener('resize', scroller.resize);
+
+            // setup the instance, pass callback functions
+            scroller
+                .setup({
+                    step: '.step',
+                    offset: 0.5,
+                    progress: true,
+                    debug: true
+                })
+                .onStepEnter(response => {
+
+                    //'id': sourceName + '_fill',
+                    console.log('onStepEnter response.element.id', response.index);
+                    console.log('data', data);
+
+                    var chapter = data.find(chap => chap.id === response.index);
+                    console.log('chapter', chapter);
+
+
+
+                    const _fill = chapter.name + '_fill';
+                    const _outline = chapter.name + '_outline';
+
+
+                    map.setLayoutProperty(_fill, 'visibility', 'visible');
+                    map.setLayoutProperty(_outline, 'visibility', 'visible');
+
+                    response.element.classList.add('active');
+                    //map.flyTo(chapter.location);
+
+                    /*
+                    if (chapter.onChapterEnter.length > 0) {
+                        chapter.onChapterEnter.forEach(setLayerOpacity);
+                    }
+                    */
+                })
+                .onStepExit(response => {
+                    console.log('onStepExit response.element.id', response.element.id);
+                    var chapter = config.chapters.find(chap => chap.id === response.element.id);
+                    response.element.classList.remove('active');
+
+                    // if (chapter.onChapterExit.length > 0) {
+                    //     chapter.onChapterExit.forEach(setLayerOpacity);
+                    // }
+                });
+        }
+    </script>
+
+</body>
+
+</html>
