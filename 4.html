@@ -111,7 +111,7 @@
 
     <div id="map"></div>
     <div id="story"></div>
-    
+
     <script>
 
 
@@ -155,7 +155,7 @@
                 { url: '1882-1894.geojson' },
                 { url: '1897-2018.geojson' },
                 { url: '2018-2021.geojson' },
-                { url: 'base-layer.geojson' },
+                // { url: 'base-layer.geojson' },
             ]
 
             let requests = layersList.map(i => fetch('data/' + i.url));
@@ -274,18 +274,14 @@
                 .onStepEnter(response => {
 
                     //'id': sourceName + '_fill',
+                    console.log('response onStepEnter', response);
                     console.log('onStepEnter response.element.id', response.index);
                     console.log('data', data);
 
                     var chapter = data.find(chap => chap.id === response.index);
                     console.log('chapter', chapter);
-
-
-
                     const _fill = chapter.name + '_fill';
                     const _outline = chapter.name + '_outline';
-
-
                     map.setLayoutProperty(_fill, 'visibility', 'visible');
                     map.setLayoutProperty(_outline, 'visibility', 'visible');
 
@@ -299,6 +295,7 @@
                     */
                 })
                 .onStepExit(response => {
+                    console.log('response onStepExit--------------------------------------->', response.direction);
                     console.log('onStepExit response.element.id', response.element.id);
                     //var chapter = config.chapters.find(chap => chap.id === response.element.id);
                     response.element.classList.remove('active');
@@ -306,6 +303,16 @@
                     // if (chapter.onChapterExit.length > 0) {
                     //     chapter.onChapterExit.forEach(setLayerOpacity);
                     // }
+
+                    if (response.direction === "up") {
+                        var chapter = data.find(chap => chap.id === response.index);
+                        console.log('chapter', chapter);
+                        const _fill = chapter.name + '_fill';
+                        const _outline = chapter.name + '_outline';
+                        map.setLayoutProperty(_fill, 'visibility', 'none');
+                        map.setLayoutProperty(_outline, 'visibility', 'none');
+                    }
+
                 });
         }
     </script>
