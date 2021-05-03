@@ -61,7 +61,7 @@
         .lefty {
 
             margin: 0px;
-            width: 100px;
+            width: 100%;
         }
 
         .righty {
@@ -93,6 +93,7 @@
             padding: 25px 50px;
             line-height: 25px;
             font-size: 13px;
+            width: 300px;
         }
 
         .step img {
@@ -117,7 +118,6 @@
 <body>
 
     <div id="map"></div>
-
     <div id="story" class="scroll"></div>
 
     <script>
@@ -246,6 +246,32 @@
                                 'circle-stroke-color': '#ffffff'
                             }
                         });
+
+                        map.on('click', layerName, function (e) {
+                            var coordinates = e.features[0].geometry.coordinates.slice();
+                            var mag = e.features[0].properties.mag;
+                            var tsunami;
+
+                            if (e.features[0].properties.tsunami === 1) {
+                                tsunami = 'yes';
+                            } else {
+                                tsunami = 'no';
+                            }
+                            while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
+                                coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
+                            }
+                            new mapboxgl.Popup()
+                                .setLngLat(coordinates)
+                                .setHTML(JSON.stringify(e.features[0].properties))
+                                .addTo(map);
+                        });
+
+                        map.on('mouseenter', layerName, function () {
+                            map.getCanvas().style.cursor = 'pointer';
+                        });
+                        map.on('mouseleave', layerName, function () {
+                            map.getCanvas().style.cursor = '';
+                        });
                     })
 
                 })
@@ -322,7 +348,6 @@
 
                     response.element.classList.add('active');
                     //map.flyTo(chapter.location);
-
                     /*
                     if (chapter.onChapterEnter.length > 0) {
                         chapter.onChapterEnter.forEach(setLayerOpacity);
