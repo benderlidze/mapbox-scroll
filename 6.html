@@ -135,6 +135,20 @@
 
 
         map.on("load", function () {
+
+            map.loadImage('img/battle-logo.png',
+                function (error, image) {
+                    if (error) throw error;
+                    // Add the image to the map style.
+                    map.addImage('battle', image);
+                });
+            map.loadImage('img/treaty-logo.png',
+                function (error, image) {
+                    if (error) throw error;
+                    // Add the image to the map style.
+                    map.addImage('treaty', image);
+                });
+
             uploadLayers()
         });
 
@@ -224,9 +238,9 @@
                     console.log(results)
                     results.map((data, index) => {
 
+                        const name = data.name
                         data.features = data.features.filter(i => i.geometry.coordinates.length > 0)
                         data.features.forEach(i => {
-
                             const arr = [];
                             if (i.properties.Date) {
                                 const s = i.properties.Date.split(/[\-\–]+/)
@@ -251,22 +265,39 @@
                             data
                         })
 
+                        const collection = {
+                            "type": "FeatureCollection",
+                            "features": []
+                        };
                         map.addSource(layerName, {
                             'type': 'geojson',
-                            'data': data
+                            'data': collection
                         });
+
                         // Add a new layer to visualize the polygon.
                         map.addLayer({
                             'id': layerName,
-                            'type': 'circle',
-                            'source': layerName,
-                            'paint': {
-                                'circle-color': color,
-                                'circle-radius': 3,
-                                'circle-stroke-width': 1,
-                                'circle-stroke-color': '#ffffff'
+                            'type': 'symbol',
+                            'source': layerName, // reference the data source
+                            'layout': {
+                                'icon-image': name,
+                                'icon-size': 1,
+                                'icon-allow-overlap': true,
+                                "icon-offset": [0, -15]
                             }
                         });
+
+                        // map.addLayer({
+                        //     'id': layerName + "_circles",
+                        //     'type': 'circle',
+                        //     'source': layerName,
+                        //     'paint': {
+                        //         'circle-color': color,
+                        //         'circle-radius': 3,
+                        //         'circle-stroke-width': 1,
+                        //         'circle-stroke-color': '#ffffff'
+                        //     }
+                        // });
 
                         map.on('click', layerName, function (e) {
                             var coordinates = e.features[0].geometry.coordinates.slice();
@@ -381,27 +412,19 @@
                         if (years.length > 1) {
                             const [start, stop] = years;
                             console.log('start,stop', start, stop);
-
                             //update pin layers by year
                             allPins.forEach(i => {
-
                                 console.log('i', i);
                                 const data = i.data.features.filter(f => {
                                     return f.properties.datesArray.some(s => s >= start && s <= stop)
                                 })
-
                                 const collection = {
                                     "type": "FeatureCollection",
                                     "features": data
                                 };
-
                                 console.log('data', collection);
-
                                 map.getSource(i.source).setData(collection);
-
                             })
-
-
                         }
                     }
 

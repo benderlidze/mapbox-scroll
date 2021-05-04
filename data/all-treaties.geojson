@@ -1,5 +1,6 @@
 {
    "type": "FeatureCollection",
+   "name": "treaty",
    "features": [
   {
     "type": "Feature",
