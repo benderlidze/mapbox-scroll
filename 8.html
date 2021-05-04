@@ -94,7 +94,7 @@
             line-height: 25px;
             font-size: 13px;
             width: 100px;
-            opacity:0
+            opacity: 0
         }
 
         .step img {
@@ -106,13 +106,17 @@
                 width: 90vw;
                 margin: 0 auto;
             }
+
+
         }
+
+
 
         .scroll {
             position: absolute;
             width: 300px;
-            right:0px;
-            top:0px;
+            right: 0px;
+            top: 0px;
             /* height: 100vh; */
 
         }
@@ -123,7 +127,7 @@
             /* pointer-events: none; */
             /* opacity: 0; */
             background-color: white;
-            opacity:0.1
+            opacity: 0.1
         }
 
         #year {
@@ -145,6 +149,17 @@
             width: 10px;
             height: 20%;
 
+        }
+
+
+        @media (max-width: 540px) {
+            .scroll {
+                width: 100px !important;
+            }
+
+            #year {
+                font-size: 0.8em !important
+            }
         }
     </style>
 </head>
