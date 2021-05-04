@@ -207,7 +207,7 @@
                             'paint': {
                                 'fill-color': '#0080ff', // blue color fill
                                 'fill-opacity': 0.5
-                            }
+                            },
 
                         });
                         // Add a black outline around the polygon.
@@ -288,7 +288,7 @@
                         // });
 
                         map.addLayer({
-                            'id': layerName ,
+                            'id': layerName,
                             'type': 'circle',
                             'source': layerName,
                             'paint': {
@@ -428,6 +428,9 @@
                             })
                         }
                     }
+
+                    map.moveLayer("pins0")
+                    map.moveLayer("pins1")
 
                 })
                 .onStepExit(response => {
