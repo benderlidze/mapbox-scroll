@@ -191,7 +191,7 @@
             zoom: 3.3,
             scrollZoom: false,
         });
-
+        map.addControl(new mapboxgl.NavigationControl(), 'top-left');
 
         map.on("load", function () {
 
@@ -474,7 +474,7 @@
 
                     line.style.height = `calc(${top} + 30px)`;
 
-                    //animateCountUp(year)
+                    animateCountUp(year)
                 })
                 .onStepExit(response => {
                     console.log('response onStepExit--------------------------------------->', response.direction);
