@@ -275,29 +275,29 @@
                         });
 
                         // Add a new layer to visualize the polygon.
-                        map.addLayer({
-                            'id': layerName,
-                            'type': 'symbol',
-                            'source': layerName, // reference the data source
-                            'layout': {
-                                'icon-image': name,
-                                'icon-size': 1,
-                                'icon-allow-overlap': true,
-                                "icon-offset": [0, -15]
-                            }
-                        });
-
                         // map.addLayer({
-                        //     'id': layerName + "_circles",
-                        //     'type': 'circle',
-                        //     'source': layerName,
-                        //     'paint': {
-                        //         'circle-color': color,
-                        //         'circle-radius': 3,
-                        //         'circle-stroke-width': 1,
-                        //         'circle-stroke-color': '#ffffff'
+                        //     'id': layerName,
+                        //     'type': 'symbol',
+                        //     'source': layerName, // reference the data source
+                        //     'layout': {
+                        //         'icon-image': name,
+                        //         'icon-size': 1,
+                        //         'icon-allow-overlap': true,
+                        //         "icon-offset": [0, -15]
                         //     }
                         // });
+
+                        map.addLayer({
+                            'id': layerName ,
+                            'type': 'circle',
+                            'source': layerName,
+                            'paint': {
+                                'circle-color': color,
+                                'circle-radius': 3,
+                                'circle-stroke-width': 1,
+                                'circle-stroke-color': '#ffffff'
+                            }
+                        });
 
                         map.on('click', layerName, function (e) {
                             var coordinates = e.features[0].geometry.coordinates.slice();
@@ -416,7 +416,8 @@
                             allPins.forEach(i => {
                                 console.log('i', i);
                                 const data = i.data.features.filter(f => {
-                                    return f.properties.datesArray.some(s => s >= start && s <= stop)
+                                    return f.properties.datesArray.some(s => s <= stop)
+                                    //return f.properties.datesArray.some(s => s >= start && s <= stop)
                                 })
                                 const collection = {
                                     "type": "FeatureCollection",
@@ -450,7 +451,6 @@
 
                 });
         }
-
 
 
         //===============HELPERS=================
