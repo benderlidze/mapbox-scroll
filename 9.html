@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <title>Scrollytelling Template</title>
+    <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
+    <link href="https://api.mapbox.com/mapbox-gl-js/v2.2.0/mapbox-gl.css" rel="stylesheet">
+    <script src="https://api.mapbox.com/mapbox-gl-js/v2.2.0/mapbox-gl.js"></script>
+    <script src="https://unpkg.com/intersection-observer@0.5.1/intersection-observer.js"></script>
+    <script src="https://unpkg.com/scrollama"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: sans-serif;
+        }
+
+        a,
+        a:hover,
+        a:visited {
+            color: #06bc00;
+        }
+
+        #map {
+            top: 0;
+            height: 100vh;
+            width: 100vw;
+            position: fixed;
+            z-index: -5;
+        }
+
+        #header {
+            margin: 3vh auto;
+            width: 90vw;
+            padding: 2vh;
+            text-align: center;
+        }
+
+        #footer {
+            width: 100%;
+            min-height: 5vh;
+            padding-top: 2vh;
+            padding-bottom: 2vh;
+            text-align: center;
+            line-height: 25px;
+            font-size: 13px;
+        }
+
+        #features {
+            padding-top: 10vh;
+            padding-bottom: 10vh;
+            z-index: 100;
+        }
+
+        .centered {
+            width: 50vw;
+            margin: 0 auto;
+        }
+
+        .lefty {
+
+            margin: 0px;
+            width: 100%;
+        }
+
+        .righty {
+            width: 33vw;
+            margin-left: 67vw;
+        }
+
+        .light {
+            color: #444;
+            background-color: #fafafa;
+        }
+
+        .dark {
+            color: #fafafa;
+            background-color: #444;
+
+            position: absolute;
+            left: calc(-100vw + 370px);
+        }
+
+        .step {
+            padding-bottom: 50vh;
+            /* margin-bottom: 10vh; */
+            /* opacity: 0.25; */
+        }
+
+        .step.active {
+            /* //opacity: 0.9; */
+        }
+
+        .step div {
+            padding: 25px 50px;
+            line-height: 25px;
+            font-size: 13px;
+            background-color: rgba(192,192,192,0.6);
+        }
+
+        .step img {
+            width: 100%;
+        }
+
+        @media (max-width: 750px) {
+            #features {
+                width: 90vw;
+                margin: 0 auto;
+            }
+
+
+        }
+
+
+
+        .scroll {
+            position: absolute;
+            width: 300px;
+            right: 0px;
+            top: 0px;
+            /* height: 100vh; */
+
+        }
+
+        #story,
+        .scroll,
+        .step {
+            /* pointer-events: none; */
+            /* opacity: 0; */
+            background-color: rgba(255, 255, 255, 0.05);
+            /* //opacity: 0.1 */
+        }
+
+        #year {
+            position: fixed;
+            top: 20%;
+            right: 10px;
+            /* border: 1px solid red; */
+            color: white;
+            font-size: 3em;
+            margin-right: 20px;
+            /* pointer-events: none; */
+        }
+
+        #line {
+            position: fixed;
+            top: 0px;
+            right: 10px;
+            background-color: white;
+            width: 10px;
+            height: 20%;
+
+        }
+
+
+        @media (max-width: 540px) {
+            .scroll {
+                width: 100px !important;
+            }
+
+            #year {
+                font-size: 0.8em !important
+            }
+
+            .dark {
+                left: calc(-100vw + 140px) !important;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="line"></div>
+    <div id="year"></div>
+    <div id="map"></div>
+    <div id="story" class="scroll"></div>
+
+    <script>
+
+        const year = document.getElementById("year");
+        const line = document.getElementById("line");
+        const allPins = []
+        const allLayersList = [
+            { url: '1600-1624.geojson' },
+            { url: '1625-1649.geojson' },
+            { url: '1650-1664.geojson' },
+            { url: '1665-1715.geojson' },
+            { url: '1716-1775.geojson' },
+            { url: '1769-1770.geojson' },
+            { url: '1771-1789.geojson' },
+            { url: '1790-1791.geojson' },
+            { url: '1792-1804.geojson' },
+            { url: '1805-1819.geojson' },
+            { url: '1820-1821.geojson' },
+            { url: '1822-1829.geojson' },
+            { url: '1822-1834.geojson' },
+            { url: '1830-1834.geojson' },
+            { url: '1834-1846.geojson' },
+            { url: '1846-1849.geojson' },
+            { url: '1850-1853.geojson' },
+            { url: '1854-1864.geojson' },
+            { url: '1865-1879.geojson' },
+            { url: '1865-1896.geojson' },
+            { url: '1880-1881.geojson' },
+            { url: '1882-1894.geojson' },
+            { url: '1897-2018.geojson' },
+            { url: '2018-2021.geojson' },
+            // { url: 'base-layer.geojson' },
+        ]
+
+        mapboxgl.accessToken = "pk.eyJ1IjoibWJ4c29sdXRpb25zIiwiYSI6ImNrMm01aG9hdTBlZGwzbXQ1ZXVrNHNmejAifQ.QHQA0N6XPWddCXtvoODHZg";
+        var map = new mapboxgl.Map({
+            container: 'map',
+            style: 'mapbox://styles/mapbox/satellite-v9',
+            center: { lng: -97.06100000000004, lat: 38.39659 },
+            zoom: 3.3,
+            scrollZoom: false,
+        });
+        map.addControl(new mapboxgl.NavigationControl(), 'top-left');
+
+        map.on("load", function () {
+
+            map.loadImage('img/battle-logo.png',
+                function (error, image) {
+                    if (error) throw error;
+                    // Add the image to the map style.
+                    map.addImage('battle', image);
+                });
+            map.loadImage('img/treaty-logo.png',
+                function (error, image) {
+                    if (error) throw error;
+                    // Add the image to the map style.
+                    map.addImage('treaty', image);
+                });
+
+            uploadLayers(allLayersList)
+        });
+
+        function uploadLayers(layersList) {
+
+            let requests = layersList.map(i => fetch('data/' + i.url));
+
+            Promise
+                .all(requests)
+                .then(results => Promise.all(results.map(r => r.json())))
+                .then(results => {
+                    console.log(results)
+
+                    results.forEach(data => {
+                        const sourceName = data.name;
+                        map.addSource(sourceName, {
+                            'type': 'geojson',
+                            'data': data
+                        });
+
+                        // Add a new layer to visualize the polygon.
+                        map.addLayer({
+                            'id': sourceName + '_fill',
+                            'type': 'fill',
+                            'source': sourceName, // reference the data source
+                            'layout': {
+                                'visibility': 'none'
+                            },
+                            'paint': {
+                                'fill-color': '#0080ff', // blue color fill
+                                'fill-opacity': 0.5
+                            },
+
+                        });
+                        // Add a black outline around the polygon.
+                        map.addLayer({
+                            'id': sourceName + '_outline',
+                            'type': 'line',
+                            'source': sourceName,
+                            'layout': {
+                                'visibility': 'none'
+                            },
+                            'paint': {
+                                'line-color': 'white',
+                                'line-width': 1
+                            }
+                        });
+                    })
+
+                    createScrolly(results)
+                })
+
+
+            Promise.all([
+                fetch('data/all-battles.geojson'),
+                fetch('data/all-treaties.geojson'),
+            ])
+                .then(results => Promise.all(results.map(r => r.json())))
+                .then((results, index) => {
+                    console.log(results)
+                    results.map((data, index) => {
+
+                        const name = data.name
+                        data.features = data.features.filter(i => i.geometry.coordinates.length > 0)
+                        data.features.forEach(i => {
+                            const arr = [];
+                            if (i.properties.Date) {
+                                const s = i.properties.Date.split(/[\-\–]+/)
+                                if (s.length > 1) {
+                                    arr.push(...range(+s[0], +s[1]))
+                                } else {
+                                    arr.push(+s[0])
+                                }
+                                i.properties.datesArray = arr
+                            } else {
+                                i.properties.datesArray = [];
+                            }
+                        })
+
+                        console.log('data', data);
+
+                        const layerName = 'pins' + index;
+                        const color = (index % 2 == 0) ? 'blue' : 'red'
+
+                        allPins.push({
+                            source: layerName,
+                            data
+                        })
+
+                        const collection = {
+                            "type": "FeatureCollection",
+                            "features": []
+                        };
+                        map.addSource(layerName, {
+                            'type': 'geojson',
+                            'data': collection
+                        });
+
+                        // Add a new layer to visualize the polygon.
+                        // map.addLayer({
+                        //     'id': layerName,
+                        //     'type': 'symbol',
+                        //     'source': layerName, // reference the data source
+                        //     'layout': {
+                        //         'icon-image': name,
+                        //         'icon-size': 1,
+                        //         'icon-allow-overlap': true,
+                        //         "icon-offset": [0, -15]
+                        //     }
+                        // });
+
+                        map.addLayer({
+                            'id': layerName,
+                            'type': 'circle',
+                            'source': layerName,
+                            'paint': {
+                                'circle-color': color,
+                                'circle-radius': 3,
+                                'circle-stroke-width': 1,
+                                'circle-stroke-color': '#ffffff'
+                            }
+                        });
+
+                        map.on('click', layerName, function (e) {
+                            var coordinates = e.features[0].geometry.coordinates.slice();
+                            var mag = e.features[0].properties.mag;
+                            var tsunami;
+
+                            if (e.features[0].properties.tsunami === 1) {
+                                tsunami = 'yes';
+                            } else {
+                                tsunami = 'no';
+                            }
+                            while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
+                                coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
+                            }
+                            new mapboxgl.Popup()
+                                .setLngLat(coordinates)
+                                .setHTML(JSON.stringify(e.features[0].properties))
+                                .addTo(map);
+                        });
+
+                        map.on('mouseenter', layerName, function () {
+                            map.getCanvas().style.cursor = 'pointer';
+                        });
+                        map.on('mouseleave', layerName, function () {
+                            map.getCanvas().style.cursor = '';
+                        });
+                    })
+
+                })
+        }
+
+        function createScrolly(data) {
+
+            var story = document.getElementById('story');
+            var features = document.createElement('div');
+            features.classList.add('lefty');
+            features.setAttribute('id', 'features');
+
+            //fill scroll data in boxes 
+            data.forEach((record, idx) => {
+                // console.log('record', record);
+                record.id = idx;
+                record.description = "Some description";
+
+                var container = document.createElement('div');
+                var chapter = document.createElement('div');
+
+                if (record.name) {
+                    var title = document.createElement('h1');
+                    title.innerText = record.name;
+                    chapter.appendChild(title);
+                }
+
+                if (record.description) {
+                    var story = document.createElement('p');
+                    story.innerHTML = record.description;
+                    chapter.appendChild(story);
+                }
+
+                container.setAttribute('id', record.idx);
+                container.classList.add('step');
+                if (idx === 0) {
+                    container.classList.add('active');
+                }
+
+                chapter.classList.add("dark");
+                container.appendChild(chapter);
+                features.appendChild(container);
+            });
+
+            story.appendChild(features);
+
+            // instantiate the scrollama
+            var scroller = scrollama();
+
+            // setup resize event
+            window.addEventListener('resize', scroller.resize);
+
+            // setup the instance, pass callback functions
+            scroller
+                .setup({
+                    step: '.step',
+                    offset: 0.5,
+                    progress: true,
+                    debug: false
+                })
+                .onStepEnter(response => {
+
+                    //'id': sourceName + '_fill',
+                    // console.log('response onStepEnter', response);
+                    // console.log('onStepEnter response.element.id', response.index);
+                    // console.log('data', data);
+
+                    var chapter = data.find(chap => chap.id === response.index);
+                    console.log('chapter', chapter);
+                    console.log('response.index', response.index);
+                    const _fill = chapter.name + '_fill';
+                    const _outline = chapter.name + '_outline';
+                    map.setLayoutProperty(_fill, 'visibility', 'visible');
+                    map.setLayoutProperty(_outline, 'visibility', 'visible');
+
+                    response.element.classList.add('active');
+                    //map.flyTo(chapter.location);
+                    /*
+                    if (chapter.onChapterEnter.length > 0) {
+                        chapter.onChapterEnter.forEach(setLayerOpacity);
+                    }
+                    */
+
+                    if (chapter && chapter !== "") {
+                        const name = chapter.name
+                        const years = name.split(/[\-\–]+/).map(i => +i)
+                        if (years.length > 1) {
+                            const [start, stop] = years;
+                            console.log('start,stop', start, stop);
+                            //update pin layers by year
+                            allPins.forEach(i => {
+                                console.log('i', i);
+                                const data = i.data.features.filter(f => {
+                                    return f.properties.datesArray.some(s => s <= stop)
+                                    //return f.properties.datesArray.some(s => s >= start && s <= stop)
+                                })
+                                const collection = {
+                                    "type": "FeatureCollection",
+                                    "features": data
+                                };
+                                console.log('data', collection);
+                                map.getSource(i.source).setData(collection);
+                            })
+                        }
+                    }
+
+                    map.moveLayer("pins0")
+                    map.moveLayer("pins1")
+
+
+                    //update year and line part 
+                    const size = allLayersList.length
+                    const top = Math.ceil((response.index * 80) / size + 5) + "%"
+                    year.style.top = top;
+                    year.innerHTML = chapter.name;
+
+                    line.style.height = `calc(${top} + 30px)`;
+
+                    //animateCountUp(year)
+                })
+                .onStepExit(response => {
+                    console.log('response onStepExit--------------------------------------->', response.direction);
+                    console.log('onStepExit response.element.id', response.element.id);
+                    //var chapter = config.chapters.find(chap => chap.id === response.element.id);
+                    response.element.classList.remove('active');
+
+                    // if (chapter.onChapterExit.length > 0) {
+                    //     chapter.onChapterExit.forEach(setLayerOpacity);
+                    // }
+
+                    if (response.direction === "up") {
+                        var chapter = data.find(chap => chap.id === response.index);
+                        console.log('chapter', chapter);
+                        const _fill = chapter.name + '_fill';
+                        const _outline = chapter.name + '_outline';
+                        map.setLayoutProperty(_fill, 'visibility', 'none');
+                        map.setLayoutProperty(_outline, 'visibility', 'none');
+                    }
+
+                });
+        }
+
+
+        //===============HELPERS=================
+        function range(start, end) { //get the years between 
+            const isReverse = (start > end);
+            const targetLength = isReverse ? (start - end) + 1 : (end - start) + 1;
+            const arr = new Array(targetLength);
+            const b = Array.apply(null, arr);
+            const result = b.map((discard, n) => {
+                return (isReverse) ? n + end : n + start;
+            });
+            return (isReverse) ? result.reverse() : result;
+        }
+
+
+
+        // How long you want the animation to take, in ms
+        const animationDuration = 2000;
+        // Calculate how long each ‘frame’ should last if we want to update the animation 60 times per second
+        const frameDuration = 1000 / 60;
+        // Use that to calculate how many frames we need to complete the animation
+        const totalFrames = Math.round(animationDuration / frameDuration);
+        // An ease-out function that slows the count as it progresses
+        const easeOutQuad = t => t * (2 - t);
+
+        // The animation function, which takes an Element
+        const animateCountUp = el => {
+            let frame = 0;
+            const countTo = parseInt(el.innerHTML, 10);
+            // Start the animation running 60 times per second
+            const counter = setInterval(() => {
+                frame++;
+                // Calculate our progress as a value between 0 and 1
+                // Pass that value to our easing function to get our
+                // progress on a curve
+                const progress = easeOutQuad(frame / totalFrames);
+                // Use the progress value to calculate the current count
+                const currentCount = Math.round(countTo);
+
+                // If the current count has changed, update the element
+                if (parseInt(el.innerHTML, 10) !== currentCount) {
+                    el.innerHTML = currentCount;
+                }
+
+                // If we’ve reached our last frame, stop the animation
+                if (frame === totalFrames) {
+                    clearInterval(counter);
+                }
+            }, frameDuration);
+        };
+
+
+    </script>
+
+</body>
+
+</html>
