@@ -96,7 +96,7 @@
             padding: 25px 50px;
             line-height: 25px;
             font-size: 13px;
-            background-color: rgba(192,192,192,0.6);
+            background-color: rgba(192, 192, 192, 0.6);
         }
 
         .step img {
@@ -235,6 +235,12 @@
                     map.addImage('treaty', image);
                 });
 
+            map.on("click", (e) => {
+                console.log('e', e);
+                const q = map.queryRenderedFeatures(e.point);
+                console.log('q', q);
+            })
+
             uploadLayers(allLayersList)
         });
 
@@ -259,6 +265,7 @@
                         map.addLayer({
                             'id': sourceName + '_fill',
                             'type': 'fill',
+                            "someCustom": 'years',
                             'source': sourceName, // reference the data source
                             'layout': {
                                 'visibility': 'none'
@@ -449,7 +456,6 @@
                     // console.log('response onStepEnter', response);
                     // console.log('onStepEnter response.element.id', response.index);
                     // console.log('data', data);
-
                     var chapter = data.find(chap => chap.id === response.index);
                     console.log('chapter', chapter);
                     console.log('response.index', response.index);
@@ -466,12 +472,15 @@
                     }
                     */
 
+                    console.log('response.direction ', response.direction);
+
                     if (chapter && chapter !== "") {
                         const name = chapter.name
                         const years = name.split(/[\-\–]+/).map(i => +i)
                         if (years.length > 1) {
                             const [start, stop] = years;
                             console.log('start,stop', start, stop);
+                            console.log('schapter', chapter);
                             //update pin layers by year
                             allPins.forEach(i => {
                                 console.log('i', i);
@@ -486,11 +495,30 @@
                                 console.log('data', collection);
                                 map.getSource(i.source).setData(collection);
                             })
+
+                            //hide all in 2018-2021
+                            if (start === 2018 && stop === 2021 && response.direction === "down") {
+                                map.getStyle().layers
+                                    .filter(i => i.id.includes("_fill") || i.id.includes("_outline"))
+                                    .forEach(i => {
+                                        map.setLayoutProperty(i.id, 'visibility', 'none');
+                                    })
+                            }
+                            //if we go back show all
+                            if (start === 1897 && stop === 2018 && response.direction === "up") {
+                                map.getStyle().layers
+                                    .filter(i => i.id.includes("_fill") || i.id.includes("_outline"))
+                                    .forEach(i => {
+                                        map.setLayoutProperty(i.id, 'visibility', 'visible');
+                                    })
+                            }
+                            map.setLayoutProperty('2018-2021_fill', 'visibility', 'none');
+                            map.setLayoutProperty("2018-2021_outline", 'visibility', 'none');
                         }
                     }
 
-                    map.moveLayer("pins0")
-                    map.moveLayer("pins1")
+                    map.moveLayer("pins0")//move circle layer to front 
+                    map.moveLayer("pins1")//move circle layer to front
 
 
                     //update year and line part 
@@ -521,6 +549,14 @@
                         map.setLayoutProperty(_fill, 'visibility', 'none');
                         map.setLayoutProperty(_outline, 'visibility', 'none');
                     }
+
+                    // if (start !== 2018 && stop !== 2021) {
+                    //     map.getStyle().layers
+                    //         .filter(i => i.id.includes("_fill") || i.id.includes("_outline"))
+                    //         .forEach(i => {
+                    //             map.setLayoutProperty(i.id, 'visibility', 'visible');
+                    //         })
+                    // }
 
                 });
         }
