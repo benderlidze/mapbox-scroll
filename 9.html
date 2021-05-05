@@ -166,6 +166,11 @@
             .dark {
                 left: calc(-100vw + 140px) !important;
             }
+
+            body,
+            html {
+                overflow-x: hidden;
+            }
         }
     </style>
 </head>
@@ -503,6 +508,9 @@
                                     .forEach(i => {
                                         map.setLayoutProperty(i.id, 'visibility', 'none');
                                     })
+
+                                map.setLayoutProperty('2018-2021_fill', 'visibility', 'visible');
+                                map.setLayoutProperty("2018-2021_outline", 'visibility', 'visible');
                             }
                             //if we go back show all
                             if (start === 1897 && stop === 2018 && response.direction === "up") {
@@ -511,9 +519,10 @@
                                     .forEach(i => {
                                         map.setLayoutProperty(i.id, 'visibility', 'visible');
                                     })
+                                map.setLayoutProperty('2018-2021_fill', 'visibility', 'none');
+                                map.setLayoutProperty("2018-2021_outline", 'visibility', 'none');
                             }
-                            map.setLayoutProperty('2018-2021_fill', 'visibility', 'none');
-                            map.setLayoutProperty("2018-2021_outline", 'visibility', 'none');
+
                         }
                     }
 
