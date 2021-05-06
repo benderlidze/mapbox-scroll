@@ -5,6 +5,7 @@
     <meta charset="utf-8" />
     <title>Scrollytelling Template</title>
     <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
+    
     <link href="https://api.mapbox.com/mapbox-gl-js/v2.2.0/mapbox-gl.css" rel="stylesheet">
     <script src="https://api.mapbox.com/mapbox-gl-js/v2.2.0/mapbox-gl.js"></script>
     <script src="https://unpkg.com/intersection-observer@0.5.1/intersection-observer.js"></script>
@@ -198,8 +199,8 @@
 
             body,
             html {
-                overflow-x: hidden;
-
+                overflow-x: hidden !important;
+                max-width: 100vw !important;
             }
 
             #mapSwitch {
