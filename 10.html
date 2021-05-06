@@ -154,27 +154,6 @@
 
         }
 
-
-        @media (max-width: 540px) {
-            .scroll {
-                width: 100px !important;
-            }
-
-            #year {
-                font-size: 0.8em !important
-            }
-
-            .dark {
-                left: calc(-100vw + 140px) !important;
-            }
-
-            body,
-            html {
-                overflow-x: hidden;
-            }
-        }
-
-
         #counter {
             position: fixed;
             bottom: 20px;
@@ -202,6 +181,42 @@
             bottom: 20px;
             left: 20px;
         }
+
+
+        @media (max-width: 540px) {
+            .scroll {
+                width: 100px !important;
+            }
+
+            #year {
+                font-size: 0.8em !important
+            }
+
+            .dark {
+                left: calc(-100vw + 140px) !important;
+            }
+
+            body,
+            html {
+                overflow-x: hidden;
+                
+            }
+
+            #mapSwitch {
+                position: fixed;
+                bottom: 120px;
+                left: 5px;
+            }
+
+            #switch {
+                width: 50px !important;
+                height: 50px !important;
+            }
+
+            #counter {
+                width: 100% !important;
+            }
+        }
     </style>
 </head>
 
@@ -215,7 +230,6 @@
         Wars: <div id="wars" class="counters">0</div>
         Treaties: <div id="triaties" class="counters">0</div>
         Land loss: <div id="landLoss" class="counters">0</div>
-
     </div>
     <div id="line"></div>
     <div id="year"></div>
