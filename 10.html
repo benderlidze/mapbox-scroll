@@ -461,8 +461,9 @@
                             const text = `
                             <h3>${props['Date/Title']}</h3>
                             <div>${props['Description']}</div>
-                            <div>${props['Location']}</div>
                             `
+                            // <div>${props['Location']}</div>
+                            
                             new mapboxgl.Popup()
                                 .setLngLat(coordinates)
                                 .setHTML(text)
