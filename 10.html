@@ -199,7 +199,7 @@
             body,
             html {
                 overflow-x: hidden;
-                
+
             }
 
             #mapSwitch {
@@ -456,20 +456,16 @@
 
                         map.on('click', layerName, function (e) {
                             var coordinates = e.features[0].geometry.coordinates.slice();
-                            var mag = e.features[0].properties.mag;
-                            var tsunami;
 
-                            if (e.features[0].properties.tsunami === 1) {
-                                tsunami = 'yes';
-                            } else {
-                                tsunami = 'no';
-                            }
-                            while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
-                                coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
-                            }
+                            const props = e.features[0].properties;
+                            const text = `
+                            <h3>${props['Date/Title']}</h3>
+                            <div>${props['Description']}</div>
+                            <div>${props['Location']}</div>
+                            `
                             new mapboxgl.Popup()
                                 .setLngLat(coordinates)
-                                .setHTML(JSON.stringify(e.features[0].properties))
+                                .setHTML(text)
                                 .addTo(map);
                         });
 
