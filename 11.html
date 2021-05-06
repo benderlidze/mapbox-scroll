@@ -296,13 +296,13 @@
             });
             map.setLayoutProperty("satellite", 'visibility', 'visible');
 
-            map.loadImage('img/battle-logo.png',
+            map.loadImage('img/war-icon.png',
                 function (error, image) {
                     if (error) throw error;
                     // Add the image to the map style.
                     map.addImage('battle', image);
                 });
-            map.loadImage('img/treaty-logo.png',
+            map.loadImage('img/treaty-icon.png',
                 function (error, image) {
                     if (error) throw error;
                     // Add the image to the map style.
@@ -432,30 +432,30 @@
                             'data': collection
                         });
 
-                        // Add a new layer to visualize the polygon.
-                        // map.addLayer({
-                        //     'id': layerName,
-                        //     'type': 'symbol',
-                        //     'source': layerName, // reference the data source
-                        //     'layout': {
-                        //         'icon-image': name,
-                        //         'icon-size': 1,
-                        //         'icon-allow-overlap': true,
-                        //         "icon-offset": [0, -15]
-                        //     }
-                        // });
-
+                        //Add a new layer to visualize the polygon.
                         map.addLayer({
                             'id': layerName,
-                            'type': 'circle',
-                            'source': layerName,
-                            'paint': {
-                                'circle-color': color,
-                                'circle-radius': 3,
-                                'circle-stroke-width': 1,
-                                'circle-stroke-color': '#ffffff'
+                            'type': 'symbol',
+                            'source': layerName, // reference the data source
+                            'layout': {
+                                'icon-image': name,
+                                'icon-size': 1,
+                                'icon-allow-overlap': true,
+                                // "icon-offset": [0, -36]
                             }
                         });
+
+                        // map.addLayer({
+                        //     'id': layerName+"123",
+                        //     'type': 'circle',
+                        //     'source': layerName,
+                        //     'paint': {
+                        //         'circle-color': color,
+                        //         'circle-radius': 3,
+                        //         'circle-stroke-width': 1,
+                        //         'circle-stroke-color': '#ffffff'
+                        //     }
+                        // });
 
                         map.on('click', layerName, function (e) {
                             var coordinates = e.features[0].geometry.coordinates.slice();
