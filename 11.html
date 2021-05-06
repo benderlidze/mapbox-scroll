@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <meta charset="utf-8" />
     <title>Scrollytelling Template</title>
@@ -12,13 +13,18 @@
     <script src="https://unpkg.com/intersection-observer@0.5.1/intersection-observer.js"></script>
     <script src="https://unpkg.com/scrollama"></script>
     <script src="https://cdn.jsdelivr.net/npm/@turf/turf@5/turf.min.js"></script>
+
+    <script src="https://code.jquery.com/jquery-2.2.4.min.js"
+        integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
+
     <style>
         body,
         html {
             margin: 0;
             padding: 0;
             font-family: sans-serif;
-            overflow-x: hidden;
+            max-width: 100% !important;
+            overflow-x: hidden !important;
         }
 
         a,
@@ -113,11 +119,7 @@
                 width: 90vw;
                 margin: 0 auto;
             }
-
-
         }
-
-
 
         .scroll {
             position: absolute;
@@ -213,6 +215,7 @@
 
             #counter {
                 width: 100% !important;
+                margin: 0px;
             }
         }
     </style>
@@ -716,6 +719,15 @@
         };
 
 
+        $(function () {
+            var $body = $(document);
+            $body.bind('scroll', function () {
+                // "Disable" the horizontal scroll.
+                if ($body.scrollLeft() !== 0) {
+                    $body.scrollLeft(0);
+                }
+            });
+        });
     </script>
 
 </body>
