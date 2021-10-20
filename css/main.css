@@ -1,0 +1,458 @@
+body,
+html {
+    margin: 0;
+    padding: 0;
+    font-family: sans-serif;
+    max-width: 100% !important;
+    overflow-x: hidden !important;
+}
+
+a,
+a:hover,
+a:visited {
+    color: #06bc00;
+}
+
+.step h2 {
+    font-size: 1em;
+}
+
+#loadingData {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100vh;
+    background-color: rgba(219, 219, 219,0.2);
+}
+
+#map {
+    top: 0;
+    height: 100vh;
+    width: 100vw;
+    position: fixed;
+    z-index: -5;
+}
+
+#header {
+    margin: 3vh auto;
+    width: 90vw;
+    padding: 2vh;
+    text-align: center;
+}
+
+#footer {
+    width: 100%;
+    min-height: 5vh;
+    padding-top: 2vh;
+    padding-bottom: 2vh;
+    text-align: center;
+    line-height: 25px;
+    font-size: 13px;
+}
+
+#features {
+    padding-top: 10vh;
+    padding-bottom: 10vh;
+    z-index: 100;
+    background-image: url("../img/scroll-bg.png");
+    background-repeat: repeat-y;
+    background-position: center;
+    width: 200px;
+    margin-left: 111px;
+}
+
+.centered {
+    width: 50vw;
+    margin: 0 auto;
+}
+
+.lefty {
+    margin: 0px;
+    width: 100%;
+}
+
+.righty {
+    width: 33vw;
+    margin-left: 67vw;
+}
+
+.light {
+    color: #444;
+    background-color: #fafafa;
+}
+
+.dark {
+    color: #fff;
+    background-color: rgba(68, 68, 68, 0.7);
+    position: absolute;
+    left: calc(-100vw + 370px);
+    pointer-events: none;
+
+    display: none;
+}
+
+#infoDiv {
+    position: fixed;
+    bottom: 0px;
+    left: 0px;
+    height: auto;
+    width: 99%;
+    z-index: 1200;
+    background-color: rgba(68, 68, 68, 0.9);
+    pointer-events: none;
+    padding: 15px;
+    color: white;
+    transition: 0.5s;
+}
+
+.step {
+    padding-bottom: 50vh;
+    /* margin-bottom: 10vh; */
+    /* opacity: 0.25; */
+}
+
+.step.active {
+    /* //opacity: 0.9; */
+}
+
+.step div {
+    padding: 25px 50px;
+    line-height: 25px;
+    font-size: 13px;
+}
+
+.step img {
+    width: 100%;
+}
+
+@media (max-width: 750px) {
+    #features {
+        width: 90vw;
+        margin: 0 auto;
+    }
+}
+
+.scroll {
+    position: absolute;
+    width: 300px;
+    right: 0px;
+    top: 0px;
+    /* height: 100vh; */
+}
+
+#story,
+.scroll,
+.step {
+    /* pointer-events: none; */
+    /* opacity: 0; */
+    /* //opacity: 0.1 */
+}
+
+#year {
+    position: fixed;
+    top: 0px;
+    right: -6px;
+    /* border: 1px solid red; */
+    color: black;
+    font-size: 2em;
+    margin-right: 20px;
+    background-color: rgba(255, 255, 255, 0.9);
+    padding: 10px;
+    /* pointer-events: none; */
+    z-index: 2;
+}
+
+#line {
+    position: fixed;
+    top: 0px;
+    right: 0px;
+    background-color: rgba(255, 255, 255, 0.9);
+    width: 15px;
+    padding-bottom: 27px;
+}
+
+#counter {
+    position: fixed;
+    top: 0px;
+    background-color: rgba(68, 68, 68, 0.7);
+    height: auto;
+    z-index: 1000;
+    color: white;
+    box-sizing: border-box;
+    width: 300px;
+    margin: 0 auto;
+    left: 0;
+    right: 0;
+    padding: 20px;
+    /*   display: flex;
+            align-items: center;
+            justify-content: center; */
+    z-index: 0;
+}
+
+.imgSwitch {
+    border: 2px solid white;
+    border-radius: 3px;
+    width: 25px;
+    height: 25px;
+    cursor: pointer;
+}
+.imgSwitchSmall {
+    border: 1px solid white;
+    width: 14px;
+    height: 14px;
+    cursor: pointer;
+}
+.counters {
+    padding-right: 10px;
+    display: inline;
+}
+
+#mapSwitch {
+    position: fixed;
+    top: 105px;
+    left: 10px;
+    color: #fff;
+    text-align: center;
+}
+
+small {
+    font-size: 10px;
+}
+
+/* The Modal (background) */
+
+.modal {
+    display: none;
+    /* Hidden by default */
+    position: fixed;
+    /* Stay in place */
+    z-index: 1;
+    /* Sit on top */
+    padding-top: 100px;
+    /* Location of the box */
+    left: 0;
+    top: 0;
+    width: 100%;
+    /* Full width */
+    height: 100%;
+    /* Full height */
+    overflow: scroll;
+    /* Enable scroll if needed */
+    background-color: rgb(68, 68, 68);
+    /* Fallback color */
+    background-color: rgba(68, 68, 68, 0.8);
+    /* Black w/ opacity */
+    border-radius: 15px;
+    margin-bottom: 100px;
+}
+
+/* Modal Content */
+
+.modal-content {
+    position: relative;
+    margin: auto;
+    width: 50%;
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+    -webkit-animation-name: animatetop;
+    -webkit-animation-duration: 0.4s;
+    animation-name: animatetop;
+    animation-duration: 0.4s;
+    z-index: 1 !important;
+    border-radius: 15px;
+    margin-bottom: 100px;
+}
+
+/* The Close Button */
+
+.close {
+    color: white;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+    color: #000;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.modal-header {
+    padding: 2px 16px;
+    color: white;
+    background-color: rgba(0, 0, 0, 0.6);
+    border-radius: 15px 15px 0 0;
+}
+
+.modal-header img {
+    width: 100px;
+    margin-top: 15px;
+}
+
+.modal-body {
+    padding: 16px;
+    background-color: rgba(0, 0, 0, 0.6);
+    color: white;
+}
+
+.modal-footer {
+    padding: 16px;
+    color: white;
+    background-color: rgba(0, 0, 0, 0.6);
+    text-align: right;
+    border-radius: 0 0 15px 15px;
+}
+
+.modal-footer small {
+    text-align: left;
+}
+
+.modal-footer button {
+    padding: 15px;
+    background-color: #888;
+    color: white;
+    border-radius: 3px;
+    border: none;
+    cursor: pointer;
+}
+
+.modal-content a {
+    text-decoration: none;
+    color: #fff;
+    font-weight: 600;
+}
+
+.modal-content a:hover {
+    text-decoration: underline;
+}
+
+@media only screen and (min-width: 321px) and (max-device-width: 539px) {
+    #story,
+    .scroll,
+    .step {
+        opacity: 0;
+    }
+}
+
+@media (max-width: 540px) {
+    .scroll {
+        width: 100px !important;
+    }
+    #year {
+        font-size: 0.8em !important;
+    }
+    .dark {
+        left: calc(-100vw + 140px) !important;
+    }
+    /* #mapSwitch {
+          position: fixed;
+          bottom: 120px;
+          left: 5px;
+      } */
+    /* #switch {
+          width: 50px !important;
+          height: 50px !important;
+      } */
+
+    .modal-content {
+        width: 80%;
+        box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0), 0 6px 20px 0 rgba(0, 0, 0, 0);
+        overflow: scroll;
+        max-height: 90%;
+        margin-top: -60px;
+        border-radius: 15px;
+    }
+
+    #line {
+        position: fixed;
+        top: 0px;
+        right: 0px;
+        background-color: rgba(255, 255, 255, 0.9);
+        width: 15px;
+        padding-bottom: 5px;
+    }
+
+    #counter {
+        width: 50%;
+    }
+
+    #features {
+        padding-top: 10vh;
+        padding-bottom: 10vh;
+        z-index: 100;
+        background-image: url("../img/scroll-bg.png") !important;
+        background-repeat: repeat-y;
+        background-position: center;
+        width: 80px;
+    }
+
+    #infoDiv div {
+        display: none;
+    }
+}
+
+.toggle {
+    display: flex;
+    align-content: center;
+    justify-content: center;
+    align-items: center;
+
+    position: absolute;
+    width: 100%;
+    pointer-events: all;
+}
+.toggle > img {
+    width: 80px;
+    cursor: pointer;
+}
+
+.rotated {
+    transform: rotate(180deg);
+    -webkit-transform: rotate(180deg);
+    -moz-transform: rotate(180deg);
+    -o-transform: rotate(180deg);
+}
+
+/* Add Animation */
+
+@-webkit-keyframes animatetop {
+    from {
+        top: -300px;
+        opacity: 0;
+    }
+    to {
+        top: 0;
+        opacity: 1;
+    }
+}
+
+@keyframes animatetop {
+    from {
+        top: -300px;
+        opacity: 0;
+    }
+    to {
+        top: 0;
+        opacity: 1;
+    }
+}
+
+.loading {
+    width: 1.5em;
+    height: 1.5em;
+    border-radius: 50%;
+    box-shadow: 0 -3em rgba(255, 255, 255, 1), 2.25em -2.25em rgba(255, 255, 255, 0.875),
+        3em 0 rgba(255, 255, 255, 0.75), 2.25em 2.25em rgba(255, 255, 255, 0.625), 0 3em rgba(255, 255, 255, 0.5),
+        -2.25em 2.25em rgba(255, 255, 255, 0.375), -3em 0 rgba(255, 255, 255, 0.25),
+        -2.25em -2.25em rgba(255, 255, 255, 0.125);
+    animation: spin 1.2s linear infinite;
+}
+
+@keyframes spin {
+    100% {
+        transform: rotate(-360deg);
+    }
+}

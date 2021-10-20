@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <title>Indian Country</title>
+
+    <meta content="yes" name="apple-mobile-web-app-capable" />
+    <meta content="minimum-scale=1.0, width=device-width, maximum-scale=1, user-scalable=no" name="viewport" />
+
+    <link href="https://api.mapbox.com/mapbox-gl-js/v2.2.0/mapbox-gl.css" rel="stylesheet">
+    <script src="https://api.mapbox.com/mapbox-gl-js/v2.2.0/mapbox-gl.js"></script>
+    <script src="https://unpkg.com/intersection-observer@0.5.1/intersection-observer.js"></script>
+    <script src="https://unpkg.com/scrollama"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@turf/turf@5/turf.min.js"></script>
+
+    <script src="https://code.jquery.com/jquery-2.2.4.min.js"
+        integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
+    <link rel="stylesheet" type="text/css" href="css/main.css" />
+
+    <meta property="og:title" content="Indian Country" />
+    <meta property="og:description" content="Colonization of what is now the United States. 1540-2021" />
+    <meta property="og:image" content="img/og-img.jpg" />
+
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-KS3P0EJFTS"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+
+        gtag('config', 'G-KS3P0EJFTS');
+    </script>
+
+    <link rel="apple-touch-icon" sizes="180x180" href="img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="img/favicon-16x16.png">
+    <link rel="manifest" href="img/site.webmanifest">
+
+</head>
+
+<body>
+
+    <div id="loadingData">
+        <div class="loading"></div>
+    </div>
+
+    <div id="infoDiv">
+        <div class="toggle">
+            <img src="img/toggle.png" id="toggle">
+        </div>
+        <div id="infoDivContent"></div>
+    </div>
+
+
+    <div id="mapSwitch">
+        <div id="switch">
+
+            <img src="img/dark.png" id="dark" alt="" class="imgSwitch">
+            <img src="img/terrain.png" id="terrain" alt="" class="imgSwitch" style=" display: none;">
+        </div>
+    </div>
+    <div id="counter">
+        <div>
+            <img src="img/war-icon.png">&nbsp;Wars:&nbsp;<div id="wars" class="counters">0</div>
+        </div>
+        <div>
+            <img src="img/treaty-icon.png">&nbsp;Treaties:&nbsp;<div id="triaties" class="counters">0</div>
+        </div>
+        <div>
+            <img src="img/land.png" id="orange" style="display: none;">
+            <img src="img/land-loss.png" id="blue">&nbsp;
+            <span id="landSign">Land loss:&nbsp;</span>
+            <div id="landLoss" class="counters">0</div>
+        </div>
+
+        <div>
+            <div id="switchImg" style="display: inline;">
+                <img src="img/dark.png" id="darkInfo" class="imgSwitchSmall" style="display: none;">
+                <img src="img/terrain.png" id="terrainInfo" class="imgSwitchSmall">
+            </div>&nbsp;<div id="switchText" style="display: inline;">Earth</div>
+        </div>
+    </div>
+    <div id="line"></div>
+    <div id="year"></div>
+    <div id="map"></div>
+    <div id="story" class="scroll"></div>
+
+
+    <!-- The Modal -->
+    <div id="myModal" class="modal">
+
+        <!-- Modal content -->
+        <div class="modal-content">
+            <div class="modal-header">
+                <span class="close">&times;</span>
+                <center><img src="img/indian-country-icon.png"></center>
+                <h1>Indian Country</h1>
+            </div>
+            <div class="modal-body">
+                An interactive map displaying colonization of what is now the United States. 1540-2021. Click on the
+                <img src="img/war-icon.png" style="width: 10px"> icon to view more information about wars and the <img
+                    src="img/treaty-icon.png" style="width: 10px"> icon to learn more about treaties.<br><br><br><br>
+                Created by <a href="http://www.waynemarci.com/" target="_blank">Wayne Marci</a>. Work in
+                progress.<br><br>
+                Original maps and historical research by Dan Cole and Imre Sutton <em><a
+                        href="https://repository.si.edu/bitstream/handle/10088/21727/nh_cole_sutton_2013.pdf?sequence=1&isAllowed=y"
+                        target="_blank">A Cartographic History of Indian- White Government Relations during the Past 400
+                        Years</a>.</em>
+            </div>
+            <div class="modal-footer">
+                <button id="closeModal">Go To Map</button>
+            </div>
+        </div>
+
+    </div>
+
+
+    <script>
+
+        const loadingData = document.getElementById("loadingData");
+        const orange = document.getElementById("orange");
+        const blue = document.getElementById("blue");
+        const infoDiv = document.getElementById("infoDiv");
+        const infoDivContent = document.getElementById("infoDivContent");
+
+        const switchText = document.getElementById("switchText");
+        const wars = document.getElementById("wars");
+        const triaties = document.getElementById("triaties");
+        const landLoss = document.getElementById("landLoss");
+        const landSign = document.getElementById("landSign");
+
+        const dark = document.getElementById("dark");
+        const terrain = document.getElementById("terrain");
+        const darkInfo = document.getElementById("darkInfo");
+        const terrainInfo = document.getElementById("terrainInfo");
+
+        const year = document.getElementById("year");
+        const line = document.getElementById("line");
+        const allPins = []
+        const allLayersList = [
+            { url: '1540-1624.geojson' },
+            { url: '1625-1649.geojson' },
+            { url: '1650-1664.geojson' },
+            { url: '1665-1715.geojson' },
+            { url: '1716-1775.geojson' },
+            { url: '1769-1770.geojson' },
+            { url: '1771-1789.geojson' },
+            { url: '1790-1791.geojson' },
+            { url: '1792-1804.geojson' },
+            { url: '1805-1819.geojson' },
+            { url: '1820-1821.geojson' },
+            { url: '1822-1829.geojson' },
+            { url: '1822-1834.geojson' },
+            { url: '1830-1834.geojson' },
+            { url: '1834-1846.geojson' },
+            { url: '1846-1849.geojson' },
+            { url: '1850-1853.geojson' },
+            { url: '1854-1864.geojson' },
+            { url: '1865-1879.geojson' },
+            { url: '1865-1896.geojson' },
+            { url: '1880-1881.geojson' },
+            { url: '1882-1894.geojson' },
+            { url: '1897-2018.geojson' },
+            { url: '2018-2021.geojson' },
+            // { url: 'base-layer.geojson' },
+        ]
+        const area = [];
+
+        const zoomLevel = (window.innerWidth <= 540) ? 2 : 3.3
+
+        console.log('zoom', zoomLevel);
+
+        mapboxgl.accessToken = "pk.eyJ1IjoibWJ4c29sdXRpb25zIiwiYSI6ImNrMm01aG9hdTBlZGwzbXQ1ZXVrNHNmejAifQ.QHQA0N6XPWddCXtvoODHZg";
+        var map = new mapboxgl.Map({
+            container: 'map',
+            style: 'mapbox://styles/mapbox/dark-v9',
+            center: { lng: -95, lat: 40 },
+            zoom: zoomLevel,
+            scrollZoom: false,
+        });
+        map.addControl(new mapboxgl.NavigationControl(), 'top-left');
+
+        map.on("load", function () {
+
+            map.addLayer({
+                id: 'satellite',
+                source: { "type": "raster", "url": "mapbox://mapbox.satellite", "tileSize": 256 },
+                type: "raster",
+            });
+            map.setLayoutProperty("satellite", 'visibility', 'visible');
+            map.loadImage('img/war-icon.png',
+                function (error, image) {
+                    if (error) throw error;
+                    // Add the image to the map style.
+                    map.addImage('battle', image);
+                });
+            map.loadImage('img/treaty-icon.png',
+                function (error, image) {
+                    if (error) throw error;
+                    // Add the image to the map style.
+                    map.addImage('treaty', image);
+                });
+
+            // map.on("click", (e) => {
+            //     const q = map.queryRenderedFeatures(e.point);
+            // })
+
+            uploadLayers(allLayersList)
+
+
+        });
+
+        document.getElementById("switch").addEventListener("click", () => {
+            if (dark.style.display !== "none") {
+                dark.style.display = "none";
+                terrain.style.display = "inline";
+
+
+                switchText.innerHTML = "Colonized Boundaries";
+                darkInfo.style.display = "inline";
+                terrainInfo.style.display = "none";
+            } else {
+                dark.style.display = "inline";
+                terrain.style.display = "none";
+
+
+
+                switchText.innerHTML = "Earth"
+                darkInfo.style.display = "none";
+                terrainInfo.style.display = "inline";
+
+            }
+
+            var visibility = map.getLayoutProperty("satellite", 'visibility');
+            if (visibility === 'visible') {
+                map.setLayoutProperty("satellite", 'visibility', 'none');
+            }
+            else {
+                map.setLayoutProperty("satellite", 'visibility', 'visible');
+            }
+        })
+
+        function uploadLayers(layersList) {
+
+            let requests = layersList.map(i => fetch('data/' + i.url));
+
+            Promise
+                .all(requests)
+                .then(results => Promise.all(results.map(r => r.json())))
+                .then(results => {
+
+                    results.forEach(data => {
+
+
+                        const sourceName = data.name;
+                        map.addSource(sourceName, {
+                            'type': 'geojson',
+                            'data': data
+                        });
+
+                        // Add a new layer to visualize the polygon.
+                        map.addLayer({
+                            'id': sourceName + '_fill',
+                            'type': 'fill',
+                            "someCustom": 'years',
+                            'source': sourceName, // reference the data source
+                            'layout': {
+                                'visibility': 'none'
+                            },
+                            'paint': {
+                                'fill-color': '#0080ff', // blue color fill
+                                'fill-opacity': 0.5,
+
+                            },
+                        });
+                        // Add a black outline around the polygon.
+                        map.addLayer({
+                            'id': sourceName + '_outline',
+                            'type': 'line',
+                            'source': sourceName,
+                            'layout': {
+                                'visibility': 'none'
+                            },
+                            'paint': {
+                                'line-color': 'white',
+                                'line-width': 1
+                            }
+                        });
+
+                        area.push({
+                            source: sourceName,
+                            area: turf.area(data)
+                        })
+
+
+
+                    })
+
+                    //styles for 2018-2021
+                    map.setPaintProperty("2018-2021_fill", "fill-color", "#f97900")   //polygon fill color
+                    map.setPaintProperty("2018-2021_outline", "line-color", "white")
+                    map.setPaintProperty("2018-2021_outline", "line-width", 1)
+                    map.setPaintProperty("2018-2021_fill", "fill-opacity", 1)
+                    map.setPaintProperty("2018-2021_outline", "line-opacity", 1)
+
+                    createScrolly(results)
+                })
+
+
+            Promise.all([
+                //fetch('data/all-battles.geojson'),
+                fetch('data/all-battles-new.geojson'),
+                fetch('data/all-treaties.geojson'),
+            ])
+                .then(results => Promise.all(results.map(r => r.json())))
+                .then((results, index) => {
+
+                    results.map((data, index) => {
+
+                        const name = data.name
+                        data.features = data.features.filter(i => i.geometry.coordinates.length > 0)
+                        data.features.forEach(i => {
+                            const arr = [];
+                            if (i.properties.Date) {
+                                const s = i.properties.Date.split(/[\-\–]+/)
+                                if (s.length > 1) {
+                                    arr.push(...range(+s[0], +s[1]))
+                                } else {
+                                    arr.push(+s[0])
+                                }
+                                i.properties.datesArray = arr
+                            } else {
+                                i.properties.datesArray = [];
+                            }
+                        })
+
+                        const layerName = 'pins' + index;
+                        const color = (index % 2 == 0) ? 'blue' : 'red'
+
+                        allPins.push({
+                            source: layerName,
+                            data
+                        })
+
+                        const collection = {
+                            "type": "FeatureCollection",
+                            "features": []
+                        };
+                        map.addSource(layerName, {
+                            'type': 'geojson',
+                            'data': collection
+                        });
+
+                        //Add a new layer to visualize the polygon.
+                        map.addLayer({
+                            'id': layerName,
+                            'type': 'symbol',
+                            'source': layerName, // reference the data source
+                            'layout': {
+                                'icon-image': name,
+                                'icon-size': 1,
+                                'icon-allow-overlap': true,
+                                // "icon-offset": [0, -36]
+                            }
+                        });
+
+                        // map.addLayer({
+                        //     'id': layerName+"123",
+                        //     'type': 'circle',
+                        //     'source': layerName,
+                        //     'paint': {
+                        //         'circle-color': color,
+                        //         'circle-radius': 3,
+                        //         'circle-stroke-width': 1,
+                        //         'circle-stroke-color': '#ffffff'
+                        //     }
+                        // });
+
+                        map.on('click', layerName, function (e) {
+                            var coordinates = e.features[0].geometry.coordinates.slice();
+
+                            const props = e.features[0].properties;
+                            const text = `
+                            <h3>${props['Date/Title']}</h3>
+                            <div>${props['Description']}</div>
+                            `
+                            // <div>${props['Location']}</div>
+
+                            new mapboxgl.Popup()
+                                .setLngLat(coordinates)
+                                .setHTML(text)
+                                .addTo(map);
+                        });
+
+                        map.on('mouseenter', layerName, function () {
+                            map.getCanvas().style.cursor = 'pointer';
+                        });
+                        map.on('mouseleave', layerName, function () {
+                            map.getCanvas().style.cursor = '';
+                        });
+
+                    })
+
+                })
+        }
+
+        let closedInfo = false;
+        document.addEventListener("click", e => {
+            console.log('toggle', e.target, e.id);
+            if (e.target.classList.contains("toggle") || e.target.id === "toggle") {
+                console.log('123', 123);
+
+                const h = infoDiv.offsetHeight - 55;
+                if (closedInfo) {
+                    infoDiv.style.bottom = "0px"
+                    infoDiv.style.height = "auto"
+                    document.getElementById("toggle").classList.remove("rotated")
+                } else {
+                    infoDiv.style.height = "40px"
+                    // infoDiv.style.bottom = -h + "px"
+                    document.getElementById("toggle").classList.add("rotated")
+                }
+                closedInfo = !closedInfo
+
+
+            }
+        })
+
+        function createScrolly(data) {
+
+            var story = document.getElementById('story');
+            var features = document.createElement('div');
+            features.classList.add('lefty');
+            features.setAttribute('id', 'features');
+
+            //fill scroll data in boxes 
+            data.forEach((record, idx) => {
+                // console.log('record', record);
+                record.id = idx;
+
+                var container = document.createElement('div');
+                var chapter = document.createElement('div');
+
+                if (record.name) {
+                    var title = document.createElement('h2');
+                    title.innerText = record.name;
+                    chapter.appendChild(title);
+                }
+
+                if (record.description) {
+                    var story = document.createElement('p');
+                    story.innerHTML = record.description;
+                    chapter.appendChild(story);
+                }
+
+                container.setAttribute('id', record.idx);
+                container.classList.add('step');
+                if (idx === 0) {
+                    container.classList.add('active');
+                }
+
+                chapter.classList.add("dark");
+                container.appendChild(chapter);
+                features.appendChild(container);
+            });
+
+            story.appendChild(features);
+
+            // instantiate the scrollama
+            var scroller = scrollama();
+
+            // setup resize event
+            window.addEventListener('resize', scroller.resize);
+
+            // setup the instance, pass callback functions
+            scroller
+                .setup({
+                    step: '.step',
+                    offset: 0.5,
+                    progress: true,
+                    debug: false
+                })
+                .onStepEnter(response => {
+
+                    //'id': sourceName + '_fill',
+                    var chapter = data.find(chap => chap.id === response.index);
+                    const _fill = chapter.name + '_fill';
+                    const _outline = chapter.name + '_outline';
+                    map.setLayoutProperty(_fill, 'visibility', 'visible');
+                    map.setLayoutProperty(_outline, 'visibility', 'visible');
+
+                    response.element.classList.add('active');
+                    //map.flyTo(chapter.location);
+                    /*
+                    if (chapter.onChapterEnter.length > 0) {
+                        chapter.onChapterEnter.forEach(setLayerOpacity);
+                    }
+                    */
+                    const forCounties = [];
+
+                    if (chapter && chapter !== "") {
+                        const name = chapter.name
+                        const years = name.split(/[\-\–]+/).map(i => +i)
+
+                        if (years.length > 1) {
+                            const [start, stop] = years;
+
+                            //update pin layers by year
+                            allPins.forEach(i => {
+
+                                const data = i.data.features.filter(f => {
+                                    return f.properties.datesArray.some(s => s <= stop)
+                                    //return f.properties.datesArray.some(s => s >= start && s <= stop)
+                                })
+                                const collection = {
+                                    "type": "FeatureCollection",
+                                    "features": data
+                                };
+
+                                map.getSource(i.source).setData(collection);
+
+                                forCounties.push({
+                                    name: i.data.name,
+                                    number: data.length
+                                })
+                            })
+
+                            //hide all in 2018-2021
+                            if (start === 2018 && stop === 2021 && response.direction === "down") {
+                                map.getStyle().layers
+                                    .filter(i => i.id.includes("_fill") || i.id.includes("_outline"))
+                                    .forEach(i => {
+                                        map.setLayoutProperty(i.id, 'visibility', 'none');
+                                    })
+
+                                map.setLayoutProperty('2018-2021_fill', 'visibility', 'visible');
+                                map.setLayoutProperty("2018-2021_outline", 'visibility', 'visible');
+
+                                landSign.innerHTML = "<strong>Land:</strong> "
+                                orange.style.display = 'inline'
+                                blue.style.display = 'none'
+                            }
+                            //if we go back show all
+                            if (start === 1897 && stop === 2018 && response.direction === "up") {
+                                map.getStyle().layers
+                                    .filter(i => i.id.includes("_fill") || i.id.includes("_outline"))
+                                    .forEach(i => {
+                                        map.setLayoutProperty(i.id, 'visibility', 'visible');
+                                    })
+                                map.setLayoutProperty('2018-2021_fill', 'visibility', 'none');
+                                map.setLayoutProperty("2018-2021_outline", 'visibility', 'none');
+                                landSign.innerHTML = "Land loss: "
+
+
+                                orange.style.display = 'none'
+                                blue.style.display = 'inline'
+                            }
+                        }
+                    }
+
+                    //CALCULTE SQUARE LAND LOSS 
+                    counters(forCounties)
+
+                    map.moveLayer("pins0")//move circle layer to front 
+                    map.moveLayer("pins1")//move circle layer to front
+
+                    //update year and line part 
+                    const size = allLayersList.length
+                    const top = Math.ceil((response.index * 80) / size + 0) + "%"
+                    year.style.top = top;
+                    year.innerHTML = chapter.name;
+
+                    line.style.height = `calc(${top} + 30px)`;
+
+                    const d = chapter.description || "";
+                    infoDivContent.innerHTML = `
+                        <h3>${chapter.name} </h3>
+                        <div>${d}</div>
+                    ` ;
+                    //animateCountUp(year)
+
+                    console.log('LOADING DONE',);
+                    loadingData.style.display = "none";
+                    // const h = infoDiv.offsetHeight - 55;
+                    // infoDiv.style.bottom = -h + "px"
+                })
+                .onStepExit(response => {
+                    //var chapter = config.chapters.find(chap => chap.id === response.element.id);
+                    response.element.classList.remove('active');
+
+                    if (response.direction === "up") {
+                        var chapter = data.find(chap => chap.id === response.index);
+                        const _fill = chapter.name + '_fill';
+                        const _outline = chapter.name + '_outline';
+                        map.setLayoutProperty(_fill, 'visibility', 'none');
+                        map.setLayoutProperty(_outline, 'visibility', 'none');
+                    }
+                });
+        }
+
+
+        // Get the modal
+        var modal = document.getElementById("myModal");
+        // Get the button that opens the modal
+        var btn = document.getElementById("closeModal");
+        // Get the <span> element that closes the modal
+        var span = document.getElementsByClassName("close")[0];
+        // When the user clicks the button, open the modal 
+        modal.style.display = "block";
+        // When the user clicks on <span> (x), close the modal
+        span.onclick = function () {
+            modal.style.display = "none";
+        }
+        btn.onclick = function () {
+            modal.style.display = "none";
+        }
+        // When the user clicks anywhere outside of the modal, close it
+        window.onclick = function (event) {
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
+
+
+
+        function counters(data) {
+
+            //area part
+            const selected = map.getStyle().layers
+                .filter(i => i.id.includes("_fill") && i.layout.visibility === "visible")
+                .map(i => i.source)
+            const summ = area.filter(i => selected.includes(i.source)).map(i => i.area).reduce((a, b) => a + b, 0)
+            wars.innerHTML = data.find(i => i.name === "battle").number;
+            triaties.innerHTML = data.find(i => i.name === "treaty").number;
+            landLoss.innerHTML = Math.ceil(summ / 4047000) + "k acres";
+
+        }
+
+        //===============HELPERS=================
+        function range(start, end) { //get the years between 
+            const isReverse = (start > end);
+            const targetLength = isReverse ? (start - end) + 1 : (end - start) + 1;
+            const arr = new Array(targetLength);
+            const b = Array.apply(null, arr);
+            const result = b.map((discard, n) => {
+                return (isReverse) ? n + end : n + start;
+            });
+            return (isReverse) ? result.reverse() : result;
+        }
+
+
+
+        // How long you want the animation to take, in ms
+        const animationDuration = 2000;
+        // Calculate how long each ‘frame’ should last if we want to update the animation 60 times per second
+        const frameDuration = 1000 / 60;
+        // Use that to calculate how many frames we need to complete the animation
+        const totalFrames = Math.round(animationDuration / frameDuration);
+        // An ease-out function that slows the count as it progresses
+        const easeOutQuad = t => t * (2 - t);
+
+        // The animation function, which takes an Element
+        const animateCountUp = el => {
+            let frame = 0;
+            const countTo = parseInt(el.innerHTML, 10);
+            // Start the animation running 60 times per second
+            const counter = setInterval(() => {
+                frame++;
+                // Calculate our progress as a value between 0 and 1
+                // Pass that value to our easing function to get our
+                // progress on a curve
+                const progress = easeOutQuad(frame / totalFrames);
+                // Use the progress value to calculate the current count
+                const currentCount = Math.round(countTo);
+
+                // If the current count has changed, update the element
+                if (parseInt(el.innerHTML, 10) !== currentCount) {
+                    el.innerHTML = currentCount;
+                }
+
+                // If we’ve reached our last frame, stop the animation
+                if (frame === totalFrames) {
+                    clearInterval(counter);
+                }
+            }, frameDuration);
+        };
+
+
+        $(function () {
+            var $body = $(document);
+            $body.bind('scroll', function () {
+                //modal.style.display = "none";
+                // "Disable" the horizontal scroll.
+                if ($body.scrollLeft() !== 0) {
+                    $body.scrollLeft(0);
+                }
+            });
+        });
+    </script>
+
+</body>
+
+</html>
