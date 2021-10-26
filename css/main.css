@@ -329,6 +329,28 @@ small {
     text-decoration: underline;
 }
 
+.toggle {
+    display: flex;
+    align-content: center;
+    justify-content: center;
+    align-items: center;
+
+    position: absolute;
+    width: 100%;
+    pointer-events: all;
+}
+.toggle > img {
+    width: 80px;
+    cursor: pointer;
+}
+
+.rotated {
+    transform: rotate(180deg);
+    -webkit-transform: rotate(180deg);
+    -moz-transform: rotate(180deg);
+    -o-transform: rotate(180deg);
+}
+
 @media only screen and (min-width: 321px) and (max-device-width: 539px) {
     #story,
     .scroll,
@@ -393,32 +415,16 @@ small {
         /* display: none; */
     }
     #infoDiv {
-        height: 40px;
+        height: 55px;
         box-sizing: border-box;
         padding: 0px 10px;
     }
-}
 
-.toggle {
-    display: flex;
-    align-content: center;
-    justify-content: center;
-    align-items: center;
-
-    position: absolute;
-    width: 100%;
-    pointer-events: all;
-}
-.toggle > img {
-    width: 80px;
-    cursor: pointer;
-}
-
-.rotated {
-    transform: rotate(180deg);
-    -webkit-transform: rotate(180deg);
-    -moz-transform: rotate(180deg);
-    -o-transform: rotate(180deg);
+    .toggle > img {
+        width: 57px;
+        cursor: pointer;
+        padding: 5px;
+    }
 }
 
 /* Add Animation */
