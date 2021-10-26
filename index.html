@@ -405,27 +405,34 @@
                 })
         }
 
-        let closedInfo = false;
+        let closedInfo = true;
+        if (window.innerWidth <= 540) {
+            openInfoDiv()
+            closedInfo = false;
+        }
         document.addEventListener("click", e => {
             console.log('toggle', e.target, e.id);
             if (e.target.classList.contains("toggle") || e.target.id === "toggle") {
                 console.log('123', 123);
-
                 const h = infoDiv.offsetHeight - 55;
                 if (closedInfo) {
-                    infoDiv.style.bottom = "0px"
-                    infoDiv.style.height = "auto"
-                    document.getElementById("toggle").classList.remove("rotated")
+                    openInfoDiv()
                 } else {
-                    infoDiv.style.height = "40px"
-                    // infoDiv.style.bottom = -h + "px"
-                    document.getElementById("toggle").classList.add("rotated")
+                    closeInfoDiv()
                 }
                 closedInfo = !closedInfo
-
-
             }
         })
+        function closeInfoDiv() {
+            console.log('close');
+            infoDiv.style.bottom = "0px"
+            infoDiv.style.height = "auto"
+            document.getElementById("toggle").classList.remove("rotated")
+        }
+        function openInfoDiv() {
+            infoDiv.style.height = "40px"
+            document.getElementById("toggle").classList.add("rotated")
+        }
 
         function createScrolly(data) {
 
